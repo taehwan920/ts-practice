@@ -1,14 +1,15 @@
-import * as THREE from '../three.module.js'
+import * as THREE from '../three.js-master/build/three.module.js'
+import { OrbitControls } from '../three.js-master/examples/jsm/controls/OrbitControls.js'
 
 class App {
-  private _divContainer: HTMLDivElement
+  private _divContainer: Element
   private _renderer: THREE.WebGLRenderer
   private _scene: THREE.Scene
   private _camera: THREE.PerspectiveCamera
   private _cube: any
 
   constructor() {
-    const divContainer: HTMLDivElement = document.querySelector('#main_canvas')!
+    const divContainer = document.querySelector('#main_canvas')!
     this._divContainer = divContainer;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -23,6 +24,7 @@ class App {
     this._setupCamera();
     this._setupLight();
     this._setupModel();
+    this._setupControls();
 
     window.onresize = this.resize.bind(this);
     this.resize();
@@ -45,14 +47,26 @@ class App {
     this._scene.add(light);
   }
 
+  _setupControls() {
+    new OrbitControls(this._camera, this._divContainer);
+  }
+
   private _setupModel() {
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material: any = new THREE.MeshPhongMaterial({ color: 0x44a88 });
+    const geometry: any = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2);
+    const fillMaterial = new THREE.MeshBasicMaterial({ color: 0x515151 });
+    const cube = new THREE.Mesh(geometry, fillMaterial);
 
-    const cube = new THREE.Mesh(geometry, material);
+    const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffff00 });
+    const line = new THREE.LineSegments(
+      new THREE.WireframeGeometry(geometry), lineMaterial
+    )
 
-    this._scene.add(cube);
-    this._cube = cube;
+    const group = new THREE.Group()
+    group.add(cube);
+    group.add(line);
+
+    this._scene.add(group);
+    this._cube = group;
   }
 
   resize() {
